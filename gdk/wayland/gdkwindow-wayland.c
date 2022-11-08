@@ -135,6 +135,7 @@ struct _GdkWindowImplWayland
     struct wl_egl_window *dummy_egl_window;
     struct zxdg_exported_v1 *xdg_exported;
     struct org_kde_kwin_server_decoration *server_decoration;
+    struct wp_fractional_scale_v1 *fractional_scale;
   } display_server;
 
   EGLSurface egl_surface;
@@ -183,6 +184,8 @@ struct _GdkWindowImplWayland
 
   gint64 pending_frame_counter;
   guint32 scale;
+
+  double fractional_scale;
 
   int margin_left;
   int margin_right;
@@ -1644,6 +1647,20 @@ gdk_wayland_window_create_subsurface (GdkWindow *window)
 }
 
 static void
+wp_fractional_scale_v1_preferred_scale(
+    void *data, struct wp_fractional_scale_v1 *fractional_scale,
+    wl_fixed_t scale)
+{
+  GdkWindow *window = GDK_WINDOW (data);
+  GdkWindowImplWayland *impl = GDK_WINDOW_IMPL_WAYLAND (window->impl);
+  impl->fractional_scale = wl_fixed_to_double(scale);
+}
+
+static const struct wp_fractional_scale_v1_listener wp_fractional_scale_v1_listener = {
+  wp_fractional_scale_v1_preferred_scale,
+};
+
+static void
 gdk_wayland_window_create_surface (GdkWindow *window)
 {
   GdkWindowImplWayland *impl = GDK_WINDOW_IMPL_WAYLAND (window->impl);
@@ -1651,6 +1668,11 @@ gdk_wayland_window_create_surface (GdkWindow *window)
 
   impl->display_server.wl_surface = wl_compositor_create_surface (display_wayland->compositor);
   wl_surface_add_listener (impl->display_server.wl_surface, &surface_listener, window);
+
+  impl->display_server.fractional_scale = wp_fractional_scale_manager_v1_get_fractional_scale(
+    display_wayland->fractional_scale_manager, impl->display_server.wl_surface);
+  wp_fractional_scale_v1_add_listener(impl->display_server.fractional_scale,
+    &wp_fractional_scale_v1_listener, window);
 }
 
 static gboolean
@@ -3431,6 +3453,13 @@ gdk_wayland_window_hide_surface (GdkWindow *window)
         {
           org_kde_kwin_server_decoration_release (impl->display_server.server_decoration);
           impl->display_server.server_decoration = NULL;
+        }
+
+      if (impl->display_server.fractional_scale)
+        {
+          wp_fractional_scale_v1_destroy(impl->display_server.
+            fractional_scale);
+          impl->display_server.fractional_scale = NULL;
         }
 
       wl_surface_destroy (impl->display_server.wl_surface);

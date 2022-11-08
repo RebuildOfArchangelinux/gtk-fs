@@ -57,6 +57,8 @@ proto_sources = [
   ['server-decoration', 'private' ],
   ['xdg-output', 'unstable', 'v1', ],
   ['primary-selection', 'unstable', 'v1', ],
+  ['wp-fractional-scale', 'private', 'v1', ],
+  ['wp-fractional-scale-wrath', 'private', 'v1', ],
 ]
 
 gdk_wayland_gen_headers = []

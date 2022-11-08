@@ -36,6 +36,8 @@
 #include <gdk/wayland/server-decoration-client-protocol.h>
 #include <gdk/wayland/xdg-output-unstable-v1-client-protocol.h>
 #include <gdk/wayland/primary-selection-unstable-v1-client-protocol.h>
+#include <gdk/wayland/wp-fractional-scale-client-protocol.h>
+#include <gdk/wayland/wp-fractional-scale-wrath-client-protocol.h>
 
 #include <glib.h>
 #include <gdk/gdkkeys.h>
@@ -97,6 +99,8 @@ struct _GdkWaylandDisplay
   struct zwp_keyboard_shortcuts_inhibit_manager_v1 *keyboard_shortcuts_inhibit;
   struct org_kde_kwin_server_decoration_manager *server_decoration_manager;
   struct zxdg_output_manager_v1 *xdg_output_manager;
+  struct wp_fractional_scale_manager_v1 *fractional_scale_manager;
+  struct wp_fractional_scale_wrath_manager_v1 *fractional_scale_wrath_manager;
   uint32_t xdg_output_version;
 
   GList *async_roundtrips;

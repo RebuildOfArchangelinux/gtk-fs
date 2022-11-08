@@ -519,6 +519,18 @@ gdk_registry_handle_global (void               *data,
       _gdk_wayland_screen_init_xdg_output (display_wayland->screen);
       _gdk_wayland_display_async_roundtrip (display_wayland);
     }
+  else if (strcmp(interface, "wp_fractional_scale_manager_v1") == 0)
+    {
+      display_wayland->fractional_scale_manager =
+        wl_registry_bind (display_wayland->wl_registry, id,
+                          &wp_fractional_scale_manager_v1_interface, 1);
+    }
+  else if (strcmp(interface, "wp_fractional_scale_wrath_manager_v1") == 0)
+    {
+      display_wayland->fractional_scale_wrath_manager =
+        wl_registry_bind (display_wayland->wl_registry, id,
+                          &wp_fractional_scale_wrath_manager_v1_interface, 1);
+    }
 
   g_hash_table_insert (display_wayland->known_globals,
                        GUINT_TO_POINTER (id), g_strdup (interface));
