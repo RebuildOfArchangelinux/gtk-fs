@@ -443,12 +443,13 @@ gtk_gl_area_allocate_buffers (GtkGLArea *area)
 {
   GtkGLAreaPrivate *priv = gtk_gl_area_get_instance_private (area);
   GtkWidget *widget = GTK_WIDGET (area);
-  int scale, width, height;
+  double scale;
+  int width, height;
 
   if (priv->context == NULL)
     return;
 
-  scale = gtk_widget_get_scale_factor (widget);
+  scale = gtk_widget_get_fractional_scale_factor (widget);
   width = gtk_widget_get_allocated_width (widget) * scale;
   height = gtk_widget_get_allocated_height (widget) * scale;
 
@@ -679,7 +680,8 @@ gtk_gl_area_draw (GtkWidget *widget,
   GtkGLArea *area = GTK_GL_AREA (widget);
   GtkGLAreaPrivate *priv = gtk_gl_area_get_instance_private (area);
   gboolean unused;
-  int w, h, scale;
+  int w, h;
+  double scale;
   GLenum status;
 
   if (priv->error != NULL)
@@ -703,7 +705,7 @@ gtk_gl_area_draw (GtkWidget *widget,
  else
    glDisable (GL_DEPTH_TEST);
 
-  scale = gtk_widget_get_scale_factor (widget);
+  scale = gtk_widget_get_fractional_scale_factor (widget);
   w = gtk_widget_get_allocated_width (widget) * scale;
   h = gtk_widget_get_allocated_height (widget) * scale;
 

@@ -2968,8 +2968,8 @@ gdk_window_begin_paint_internal (GdkWindow            *window,
     {
       GdkGLContext *context;
 
-      int ww = gdk_window_get_width (window) * gdk_window_get_scale_factor (window);
-      int wh = gdk_window_get_height (window) * gdk_window_get_scale_factor (window);
+      int ww = gdk_window_get_width (window) * gdk_window_get_fractional_scale_factor (window);
+      int wh = gdk_window_get_height (window) * gdk_window_get_fractional_scale_factor (window);
 
       context = gdk_window_get_paint_gl_context (window, NULL);
       if (context == NULL)
@@ -10251,6 +10251,16 @@ gdk_window_create_similar_image_surface (GdkWindow *     window,
 					 int             height,
 					 int             scale)
 {
+  return gdk_window_create_similar_image_surface_new(window, format, width, height, scale);
+}
+
+cairo_surface_t *
+gdk_window_create_similar_image_surface_new (GdkWindow *     window,
+					 cairo_format_t  format,
+					 int             width,
+					 int             height,
+					 double          scale)
+{
   GdkWindowImplClass *impl_class;
   cairo_surface_t *window_surface, *surface;
   GdkDisplay *display;
@@ -10280,8 +10290,8 @@ gdk_window_create_similar_image_surface (GdkWindow *     window,
       cairo_surface_destroy (window_surface);
     }
 
-  if (scale == 0)
-    scale = gdk_window_get_scale_factor (window);
+  if (scale == 0.)
+    scale = gdk_window_get_fractional_scale_factor (window);
 
   cairo_surface_set_device_scale (surface, scale, scale);
 
@@ -11830,19 +11840,25 @@ gdk_window_get_frame_clock (GdkWindow *window)
 gint
 gdk_window_get_scale_factor (GdkWindow *window)
 {
+  return gdk_window_get_fractional_scale_factor (window);
+}
+
+double
+gdk_window_get_fractional_scale_factor (GdkWindow *window)
+{
   GdkWindowImplClass *impl_class;
 
-  g_return_val_if_fail (GDK_IS_WINDOW (window), 1);
+  g_return_val_if_fail (GDK_IS_WINDOW (window), 1.);
 
   if (GDK_WINDOW_DESTROYED (window))
-    return 1;
+    return 1.;
 
   impl_class = GDK_WINDOW_IMPL_GET_CLASS (window->impl);
 
   if (impl_class->get_scale_factor)
     return impl_class->get_scale_factor (window);
 
-  return 1;
+  return 1.;
 }
 
 /* Returns the *real* unscaled size, which may be a fractional size
@@ -11854,7 +11870,7 @@ gdk_window_get_unscaled_size (GdkWindow *window,
                               int *unscaled_height)
 {
   GdkWindowImplClass *impl_class;
-  gint scale;
+  double scale;
 
   g_return_if_fail (GDK_IS_WINDOW (window));
 
@@ -11869,7 +11885,7 @@ gdk_window_get_unscaled_size (GdkWindow *window,
         }
     }
 
-  scale = gdk_window_get_scale_factor (window);
+  scale = gdk_window_get_fractional_scale_factor (window);
 
   if (unscaled_width)
     *unscaled_width = window->width * scale;

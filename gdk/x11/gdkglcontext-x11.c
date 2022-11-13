@@ -201,7 +201,7 @@ static void
 gdk_gl_blit_region (GdkWindow *window, cairo_region_t *region)
 {
   int n_rects, i;
-  int scale = gdk_window_get_scale_factor (window);
+  double scale = gdk_window_get_fractional_scale_factor (window);
   int wh = gdk_window_get_height (window);
   cairo_rectangle_int_t rect;
 
@@ -433,7 +433,7 @@ gdk_x11_gl_context_texture_from_surface (GdkGLContext *paint_context,
   int n_rects, i;
   GdkWindow *window;
   int unscaled_window_height;
-  int window_scale;
+  double window_scale;
   unsigned int texture_id;
   gboolean use_texture_rectangle;
   guint target;
@@ -462,7 +462,7 @@ gdk_x11_gl_context_texture_from_surface (GdkGLContext *paint_context,
   GDK_NOTE (OPENGL, g_message ("Using GLX_EXT_texture_from_pixmap to draw surface"));
 
   window = gdk_gl_context_get_window (paint_context)->impl_window;
-  window_scale = gdk_window_get_scale_factor (window);
+  window_scale = gdk_window_get_fractional_scale_factor (window);
   gdk_window_get_unscaled_size (window, NULL, &unscaled_window_height);
 
   sx = sy = 1;

@@ -183,8 +183,9 @@ struct _GdkWindowImplWayland
   GdkSeat *grab_input_seat;
 
   gint64 pending_frame_counter;
-  guint32 scale;
+  double scale;
 
+  /* Value of 0 means not using fractional scale */
   double fractional_scale;
 
   int margin_left;
@@ -252,7 +253,7 @@ struct _GdkWindowImplWaylandClass
 static void gdk_wayland_window_maybe_configure (GdkWindow *window,
                                                 int        width,
                                                 int        height,
-                                                int        scale);
+                                                double     scale);
 
 static void maybe_set_gtk_surface_dbus_properties (GdkWindow *window);
 static void maybe_set_gtk_surface_modal (GdkWindow *window);
@@ -289,10 +290,11 @@ G_DEFINE_TYPE (GdkWindowImplWayland, _gdk_window_impl_wayland, GDK_TYPE_WINDOW_I
 static void
 _gdk_window_impl_wayland_init (GdkWindowImplWayland *impl)
 {
-  impl->scale = 1;
+  impl->scale = 1.;
   impl->initial_fullscreen_monitor = -1;
   impl->saved_width = -1;
   impl->saved_height = -1;
+  impl->fractional_scale = 0.;
 }
 
 static void
@@ -392,25 +394,17 @@ _gdk_wayland_window_clear_saved_size (GdkWindow *window)
  * cairo surface) when its size has changed.
  */
 static void
-gdk_wayland_window_update_size (GdkWindow *window,
-                                int32_t    width,
-                                int32_t    height,
-                                int        scale)
+gdk_wayland_window_do_update_size_or_scale (GdkWindow *window)
 {
   GdkWindowImplWayland *impl = GDK_WINDOW_IMPL_WAYLAND (window->impl);
   GdkRectangle area;
   cairo_region_t *region;
 
-  if ((window->width == width) &&
-      (window->height == height) &&
-      (impl->scale == scale))
-    return;
-
   drop_cairo_surfaces (window);
 
-  window->width = width;
-  window->height = height;
-  impl->scale = scale;
+  int32_t width = window->width;
+  int32_t height = window->height;
+  double scale = impl->scale;
 
   if (impl->display_server.egl_window)
     wl_egl_window_resize (impl->display_server.egl_window, width * scale, height * scale, 0, 0);
@@ -425,6 +419,28 @@ gdk_wayland_window_update_size (GdkWindow *window,
   region = cairo_region_create_rectangle (&area);
   _gdk_window_invalidate_for_expose (window, region);
   cairo_region_destroy (region);
+}
+
+static bool
+gdk_wayland_window_update_size (GdkWindow *window, int32_t width, int32_t height)
+{
+  if ((window->width == width) && (window->height == height))
+    return false;
+  window->width = width;
+  window->height = height;
+  return true;
+  // gdk_wayland_window_do_update_size_or_scale(window);
+}
+
+static bool
+gdk_wayland_window_update_scale (GdkWindow *window, double scale, bool is_fractional_scale)
+{
+  GdkWindowImplWayland *impl = GDK_WINDOW_IMPL_WAYLAND (window->impl);
+  if (impl->scale == scale || (impl->fractional_scale && !is_fractional_scale))
+    return false;
+  impl->scale = scale;
+  return true;
+  // gdk_wayland_window_do_update_size_or_scale(window);
 }
 
 GdkWindow *
@@ -454,6 +470,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
   impl->using_csd = TRUE;
 
   /* logical 1x1 fake buffer */
+  // TODO: Scale may be less than 1
   impl->staging_cairo_surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
                                                             impl->scale,
                                                             impl->scale);
@@ -747,7 +764,7 @@ window_update_scale (GdkWindow *window)
   GdkWindowImplWayland *impl = GDK_WINDOW_IMPL_WAYLAND (window->impl);
   GdkWaylandDisplay *display_wayland =
     GDK_WAYLAND_DISPLAY (gdk_window_get_display (window));
-  guint32 scale;
+  double scale;
   GSList *l;
 
   if (display_wayland->compositor_version < WL_SURFACE_HAS_BUFFER_SCALE)
@@ -1132,7 +1149,7 @@ static void
 gdk_wayland_window_configure (GdkWindow *window,
                               int        width,
                               int        height,
-                              int        scale)
+                              double     scale)
 {
   GdkDisplay *display;
   GdkEvent *event;
@@ -1146,7 +1163,10 @@ gdk_wayland_window_configure (GdkWindow *window,
   event->configure.width = width;
   event->configure.height = height;
 
-  gdk_wayland_window_update_size (window, width, height, scale);
+  bool size_updated = gdk_wayland_window_update_size (window, width, height);
+  bool scale_updated = gdk_wayland_window_update_scale (window, scale, false);
+  if (size_updated || scale_updated)
+    gdk_wayland_window_do_update_size_or_scale (window);
   _gdk_window_update_size (window);
 
   display = gdk_window_get_display (window);
@@ -1208,7 +1228,7 @@ static void
 gdk_wayland_window_maybe_configure (GdkWindow *window,
                                     int        width,
                                     int        height,
-                                    int        scale)
+                                    double     scale)
 {
   GdkWindowImplWayland *impl = GDK_WINDOW_IMPL_WAYLAND (window->impl);
   gboolean is_xdg_popup;
@@ -1222,7 +1242,7 @@ gdk_wayland_window_maybe_configure (GdkWindow *window,
     return;
 
   size_changed = (window->width != width || window->height != height);
-  if (!size_changed && impl->scale == scale)
+  if (!size_changed && (impl->scale == scale || impl->fractional_scale))
     return;
 
   /* For xdg_popup using an xdg_positioner, there is a race condition if
@@ -1654,6 +1674,8 @@ wp_fractional_scale_v1_preferred_scale(
   GdkWindow *window = GDK_WINDOW (data);
   GdkWindowImplWayland *impl = GDK_WINDOW_IMPL_WAYLAND (window->impl);
   impl->fractional_scale = wl_fixed_to_double(scale);
+  if (gdk_wayland_window_update_scale(window, impl->fractional_scale, true))
+    gdk_wayland_window_do_update_size_or_scale(window);
 }
 
 static const struct wp_fractional_scale_v1_listener wp_fractional_scale_v1_listener = {
@@ -4718,13 +4740,13 @@ gdk_wayland_window_delete_property (GdkWindow *window,
 {
 }
 
-static gint
+static double
 gdk_wayland_window_get_scale_factor (GdkWindow *window)
 {
   GdkWindowImplWayland *impl = GDK_WINDOW_IMPL_WAYLAND (window->impl);
 
   if (GDK_WINDOW_DESTROYED (window))
-    return 1;
+    return 1.;
 
   return impl->scale;
 }

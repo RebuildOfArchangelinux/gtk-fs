@@ -670,19 +670,19 @@ gdk_offscreen_window_get_frame_extents (GdkWindow    *window,
   rect->height = window->height;
 }
 
-static gint
+static double
 gdk_offscreen_window_get_scale_factor (GdkWindow *window)
 {
   GdkOffscreenWindow *offscreen;
 
   if (GDK_WINDOW_DESTROYED (window))
-    return 1;
+    return 1.;
 
   offscreen = GDK_OFFSCREEN_WINDOW (window->impl);
   if (offscreen->embedder)
-    return gdk_window_get_scale_factor (offscreen->embedder);
+    return gdk_window_get_fractional_scale_factor (offscreen->embedder);
 
-  return gdk_window_get_scale_factor (window->parent);
+  return gdk_window_get_fractional_scale_factor (window->parent);
 }
 
 static void

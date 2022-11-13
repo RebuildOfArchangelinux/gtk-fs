@@ -855,6 +855,10 @@ void          gdk_window_get_frame_extents (GdkWindow     *window,
 GDK_AVAILABLE_IN_3_10
 gint          gdk_window_get_scale_factor  (GdkWindow     *window);
 
+// TODO: Get the availability right
+GDK_AVAILABLE_IN_ALL
+double          gdk_window_get_fractional_scale_factor  (GdkWindow     *window);
+
 #ifndef GDK_MULTIDEVICE_SAFE
 GDK_DEPRECATED_IN_3_0_FOR(gdk_window_get_device_position)
 GdkWindow *   gdk_window_get_pointer     (GdkWindow       *window,
@@ -947,6 +951,13 @@ cairo_surface_t *
 						       int            width,
 						       int            height,
 						       int            scale);
+
+cairo_surface_t *
+              gdk_window_create_similar_image_surface_new (GdkWindow *window,
+						       cairo_format_t format,
+						       int            width,
+						       int            height,
+						       double         scale);
 
 GDK_AVAILABLE_IN_ALL
 void          gdk_window_beep            (GdkWindow       *window);

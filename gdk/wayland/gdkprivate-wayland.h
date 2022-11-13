@@ -220,7 +220,7 @@ void _gdk_wayland_screen_remove_output (GdkScreen *screen,
                                         guint32 id);
 int _gdk_wayland_screen_get_output_refresh_rate (GdkScreen        *screen,
                                                  struct wl_output *output);
-guint32 _gdk_wayland_screen_get_output_scale (GdkScreen        *screen,
+double _gdk_wayland_screen_get_output_scale (GdkScreen        *screen,
 					      struct wl_output *output);
 struct wl_output *_gdk_wayland_screen_get_wl_output (GdkScreen *screen,
                                                      gint monitor_num);
@@ -239,7 +239,7 @@ void _gdk_wayland_display_update_serial (GdkWaylandDisplay *display_wayland,
 cairo_surface_t * _gdk_wayland_display_create_shm_surface (GdkWaylandDisplay *display,
                                                            int                width,
                                                            int                height,
-                                                           guint              scale);
+                                                           double             scale);
 struct wl_buffer *_gdk_wayland_shm_surface_get_wl_buffer (cairo_surface_t *surface);
 gboolean _gdk_wayland_is_shm_surface (cairo_surface_t *surface);
 

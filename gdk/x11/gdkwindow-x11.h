@@ -75,7 +75,7 @@ struct _GdkWindowImplX11
   guint frame_sync_enabled : 1;
   guint tracking_damage: 1;
 
-  gint window_scale;
+  double window_scale;
 
   /* Width and height not divided by window_scale - this matters in the
    * corner-case where the window manager assigns us a size that isn't

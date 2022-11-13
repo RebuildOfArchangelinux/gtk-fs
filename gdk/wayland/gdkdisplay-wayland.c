@@ -1256,7 +1256,7 @@ typedef struct _GdkWaylandCairoSurfaceData {
   struct wl_shm_pool *pool;
   struct wl_buffer *buffer;
   GdkWaylandDisplay *display;
-  uint32_t scale;
+  double scale;
 } GdkWaylandCairoSurfaceData;
 
 static int
@@ -1371,7 +1371,7 @@ cairo_surface_t *
 _gdk_wayland_display_create_shm_surface (GdkWaylandDisplay *display,
                                          int                width,
                                          int                height,
-                                         guint              scale)
+                                         double             scale)
 {
   GdkWaylandCairoSurfaceData *data;
   cairo_surface_t *surface = NULL;

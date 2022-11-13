@@ -294,7 +294,7 @@ struct _GdkWindowImplClass
   void         (*delete_property)         (GdkWindow      *window,
                                            GdkAtom         property);
 
-  gint         (* get_scale_factor)       (GdkWindow      *window);
+  double       (* get_scale_factor)       (GdkWindow      *window);
   void         (* get_unscaled_size)      (GdkWindow      *window,
                                            int            *unscaled_width,
                                            int            *unscaled_height);

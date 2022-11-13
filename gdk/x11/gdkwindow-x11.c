@@ -156,7 +156,7 @@ gdk_window_impl_x11_init (GdkWindowImplX11 *impl)
 {  
   impl->device_cursor = g_hash_table_new_full (NULL, NULL,
                                                NULL, g_object_unref);
-  impl->window_scale = 1;
+  impl->window_scale = 1.;
   impl->frame_sync_enabled = TRUE;
 }
 
@@ -3372,8 +3372,8 @@ gdk_x11_window_get_frame_extents (GdkWindow    *window,
      as well as round the size up when we divide by scale so that the returned
      size is guaranteed to cover the real pixels, but it may overshoot a bit
      in case the window is not positioned/sized according to the scale */
-  rect->width = (rect->width + rect->x % impl->window_scale + impl->window_scale - 1) / impl->window_scale;
-  rect->height = (rect->height + rect->y % impl->window_scale + impl->window_scale - 1) / impl->window_scale;
+  rect->width = (rect->width + impl->window_scale - 1) / impl->window_scale;
+  rect->height = (rect->height + impl->window_scale - 1) / impl->window_scale;
   rect->x = rect->x / impl->window_scale;
   rect->y = rect->y / impl->window_scale;
   gdk_x11_display_error_trap_pop_ignored (display);
@@ -5664,7 +5664,7 @@ gdk_x11_window_get_xid (GdkWindow *window)
   return GDK_WINDOW_IMPL_X11 (window->impl)->xid;
 }
 
-static gint
+static double
 gdk_x11_window_get_scale_factor (GdkWindow *window)
 {
   GdkWindowImplX11 *impl = GDK_WINDOW_IMPL_X11 (window->impl);

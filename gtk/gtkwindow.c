@@ -203,7 +203,7 @@ struct _GtkWindowPrivate
 
   guint    mnemonics_display_timeout_id;
 
-  gint     scale;
+  double     scale;
 
   gint title_height;
   GtkWidget *title_box;
@@ -1753,7 +1753,7 @@ gtk_window_init (GtkWindow *window)
 
   gtk_css_node_add_class (widget_node, g_quark_from_static_string (GTK_STYLE_CLASS_BACKGROUND));
 
-  priv->scale = gtk_widget_get_scale_factor (widget);
+  priv->scale = gtk_widget_get_fractional_scale_factor (widget);
 
 #ifdef GDK_WINDOWING_X11
   gtk_drag_dest_set (GTK_WIDGET (window),
@@ -6780,10 +6780,10 @@ check_scale_changed (GtkWindow *window)
 {
   GtkWindowPrivate *priv = window->priv;
   GtkWidget *widget = GTK_WIDGET (window);
-  int old_scale;
+  double old_scale;
 
   old_scale = priv->scale;
-  priv->scale = gtk_widget_get_scale_factor (widget);
+  priv->scale = gtk_widget_get_fractional_scale_factor (widget);
   if (old_scale != priv->scale)
     _gtk_widget_scale_changed (widget);
 }

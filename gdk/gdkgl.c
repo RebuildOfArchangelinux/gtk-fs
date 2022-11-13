@@ -223,7 +223,7 @@ gdk_gl_texture_quads (GdkGLContext *paint_context,
   GdkGLContextPaintData *paint_data  = gdk_gl_context_get_paint_data (paint_context);
   GdkGLContextProgram *program;
   GdkWindow *window = gdk_gl_context_get_window (paint_context);
-  int window_scale = gdk_window_get_scale_factor (window);
+  double window_scale = gdk_window_get_fractional_scale_factor (window);
   float w = gdk_window_get_width (window) * window_scale;
   float h = gdk_window_get_height (window) * window_scale;
   int i;
@@ -344,7 +344,8 @@ gdk_cairo_draw_from_gl (cairo_t              *cr,
   GdkGLContext *paint_context;
   cairo_surface_t *image;
   cairo_matrix_t matrix;
-  int dx, dy, window_scale;
+  int dx, dy;
+  double window_scale;
   gboolean trivial_transform;
   cairo_surface_t *group_target;
   GdkWindow *direct_window, *impl_window;
@@ -355,7 +356,7 @@ gdk_cairo_draw_from_gl (cairo_t              *cr,
 
   impl_window = window->impl_window;
 
-  window_scale = gdk_window_get_scale_factor (impl_window);
+  window_scale = gdk_window_get_fractional_scale_factor (impl_window);
 
   paint_context = gdk_window_get_paint_gl_context (window, NULL);
   if (paint_context == NULL)
@@ -733,7 +734,7 @@ gdk_gl_texture_from_surface (cairo_surface_t *surface,
   GdkWindow *window;
   int unscaled_window_height;
   unsigned int texture_id;
-  int window_scale;
+  double window_scale;
   double sx, sy;
   float umax, vmax;
   gboolean use_texture_rectangle;
@@ -749,7 +750,7 @@ gdk_gl_texture_from_surface (cairo_surface_t *surface,
   use_texture_rectangle = gdk_gl_context_use_texture_rectangle (paint_context);
 
   window = gdk_gl_context_get_window (paint_context);
-  window_scale = gdk_window_get_scale_factor (window);
+  window_scale = gdk_window_get_fractional_scale_factor (window);
   gdk_window_get_unscaled_size (window, NULL, &unscaled_window_height);
 
   sx = sy = 1;

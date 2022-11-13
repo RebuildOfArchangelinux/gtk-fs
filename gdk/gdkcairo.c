@@ -284,6 +284,14 @@ gdk_cairo_surface_create_from_pixbuf (const GdkPixbuf *pixbuf,
                                       int              scale,
                                       GdkWindow       *for_window)
 {
+  return gdk_cairo_surface_create_from_pixbuf_new(pixbuf, scale, for_window);
+}
+
+cairo_surface_t *
+gdk_cairo_surface_create_from_pixbuf_new (const GdkPixbuf *pixbuf,
+                                      double              scale,
+                                      GdkWindow       *for_window)
+{
   cairo_format_t format;
   cairo_surface_t *surface;
 
@@ -297,7 +305,7 @@ gdk_cairo_surface_create_from_pixbuf (const GdkPixbuf *pixbuf,
     format = CAIRO_FORMAT_ARGB32;
 
   surface =
-     gdk_window_create_similar_image_surface (for_window,
+     gdk_window_create_similar_image_surface_new (for_window,
 					      format,
                                               gdk_pixbuf_get_width (pixbuf),
                                               gdk_pixbuf_get_height (pixbuf),

@@ -627,7 +627,7 @@ struct _GtkStateData
   guint         flags_to_set;
   guint         flags_to_unset;
 
-  gint          old_scale_factor;
+  double          old_scale_factor;
 };
 
 /* --- prototypes --- */
@@ -8869,7 +8869,7 @@ gtk_widget_update_state_flags (GtkWidget     *widget,
     {
       GtkStateData data;
 
-      data.old_scale_factor = gtk_widget_get_scale_factor (widget);
+      data.old_scale_factor = gtk_widget_get_fractional_scale_factor (widget);
       data.flags_to_set = flags_to_set;
       data.flags_to_unset = flags_to_unset;
 
@@ -9528,7 +9528,7 @@ gtk_widget_set_sensitive (GtkWidget *widget,
     {
       GtkStateData data;
 
-      data.old_scale_factor = gtk_widget_get_scale_factor (widget);
+      data.old_scale_factor = gtk_widget_get_fractional_scale_factor (widget);
 
       if (sensitive)
         {
@@ -9625,7 +9625,7 @@ gtk_widget_set_parent (GtkWidget *widget,
       return;
     }
 
-  data.old_scale_factor = gtk_widget_get_scale_factor (widget);
+  data.old_scale_factor = gtk_widget_get_fractional_scale_factor (widget);
 
   /* keep this function in sync with gtk_menu_attach_to_widget()
    */
@@ -10935,6 +10935,7 @@ _gtk_widget_scale_changed (GtkWidget *widget)
 
   priv = widget->priv;
 
+  // TODO: Add fractional scale factor prop
   if (priv->context)
     gtk_style_context_set_scale (priv->context, gtk_widget_get_scale_factor (widget));
 
@@ -10965,6 +10966,12 @@ _gtk_widget_scale_changed (GtkWidget *widget)
 gint
 gtk_widget_get_scale_factor (GtkWidget *widget)
 {
+  return gtk_widget_get_fractional_scale_factor(widget);
+}
+
+double
+gtk_widget_get_fractional_scale_factor (GtkWidget *widget)
+{
   GtkWidget *toplevel;
   GdkDisplay *display;
   GdkMonitor *monitor;
@@ -10972,11 +10979,11 @@ gtk_widget_get_scale_factor (GtkWidget *widget)
   g_return_val_if_fail (GTK_IS_WIDGET (widget), 1);
 
   if (_gtk_widget_get_realized (widget))
-    return gdk_window_get_scale_factor (_gtk_widget_get_window (widget));
+    return gdk_window_get_fractional_scale_factor (_gtk_widget_get_window (widget));
 
   toplevel = _gtk_widget_get_toplevel (widget);
   if (toplevel && toplevel != widget)
-    return gtk_widget_get_scale_factor (toplevel);
+    return gtk_widget_get_fractional_scale_factor (toplevel);
 
   /* else fall back to something that is more likely to be right than
    * just returning 1:
@@ -12895,7 +12902,7 @@ gtk_widget_propagate_state (GtkWidget    *widget,
   GtkWidgetPrivate *priv = widget->priv;
   GtkStateFlags new_flags, old_flags = priv->state_flags;
   GtkStateType old_state;
-  gint new_scale_factor = gtk_widget_get_scale_factor (widget);
+  double new_scale_factor = gtk_widget_get_fractional_scale_factor (widget);
 
   G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
   old_state = gtk_widget_get_state (widget);

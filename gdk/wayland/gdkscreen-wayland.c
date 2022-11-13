@@ -1760,7 +1760,7 @@ output_handle_mode (void             *data,
                     int               refresh)
 {
   GdkWaylandMonitor *monitor = (GdkWaylandMonitor *)data;
-  int scale;
+  double scale;
 
   GDK_NOTE (MISC,
             g_message ("handle mode output %d, size %d %d, rate %d",
@@ -1897,7 +1897,7 @@ _gdk_wayland_screen_get_output_refresh_rate (GdkScreen        *screen,
   return 0;
 }
 
-guint32
+double
 _gdk_wayland_screen_get_output_scale (GdkScreen        *screen,
 				      struct wl_output *output)
 {

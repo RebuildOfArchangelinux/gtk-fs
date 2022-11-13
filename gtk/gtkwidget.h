@@ -1010,6 +1010,7 @@ GDK_AVAILABLE_IN_ALL
 gboolean      gtk_widget_has_screen      (GtkWidget *widget);
 GDK_AVAILABLE_IN_3_10
 gint          gtk_widget_get_scale_factor (GtkWidget *widget);
+double        gtk_widget_get_fractional_scale_factor (GtkWidget *widget);
 GDK_AVAILABLE_IN_ALL
 GdkDisplay *  gtk_widget_get_display     (GtkWidget *widget);
 GDK_DEPRECATED_IN_3_12

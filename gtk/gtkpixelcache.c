@@ -210,7 +210,7 @@ _gtk_pixel_cache_create_surface_if_needed (GtkPixelCache         *cache,
        cache->surface_w > surface_w * ALLOW_LARGER_SIZE_FACTOR ||
        cache->surface_h < MAX(view_rect->height, surface_h * ALLOW_SMALLER_SIZE_FACTOR) ||
        cache->surface_h > surface_h * ALLOW_LARGER_SIZE_FACTOR ||
-       cache->surface_scale != gdk_window_get_scale_factor (window)))
+       cache->surface_scale != gdk_window_get_fractional_scale_factor (window)))
     {
       cairo_surface_destroy (cache->surface);
       cache->surface = NULL;
@@ -231,7 +231,7 @@ _gtk_pixel_cache_create_surface_if_needed (GtkPixelCache         *cache,
       cache->surface_y = -canvas_rect->y;
       cache->surface_w = MAX (surface_w, 1);
       cache->surface_h = MAX (surface_h, 1);
-      cache->surface_scale = gdk_window_get_scale_factor (window);
+      cache->surface_scale = gdk_window_get_fractional_scale_factor (window);
 
       cache->surface =
         gdk_window_create_similar_surface (window, content,

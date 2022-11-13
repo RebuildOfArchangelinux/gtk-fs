@@ -500,14 +500,14 @@ gtk_socket_size_request (GtkSocket *socket)
   GdkDisplay *display;
   XSizeHints hints;
   long supplied;
-  int scale;
+  double scale;
 
   display = gtk_widget_get_display (GTK_WIDGET (socket));
   gdk_x11_display_error_trap_push (display);
 
   private->request_width = 1;
   private->request_height = 1;
-  scale = gtk_widget_get_scale_factor (GTK_WIDGET(socket));
+  scale = gtk_widget_get_fractional_scale_factor (GTK_WIDGET(socket));
 
   if (XGetWMNormalHints (GDK_WINDOW_XDISPLAY (private->plug_window),
 			 GDK_WINDOW_XID (private->plug_window),
@@ -583,7 +583,8 @@ gtk_socket_send_configure_event (GtkSocket *socket)
   GtkAllocation allocation;
   XConfigureEvent xconfigure;
   GdkDisplay *display;
-  int x, y, scale;
+  int x, y;
+  double scale;
 
   g_return_if_fail (socket->priv->plug_window != NULL);
 
@@ -603,7 +604,7 @@ gtk_socket_send_configure_event (GtkSocket *socket)
   gdk_x11_display_error_trap_pop_ignored (display);
 
   gtk_widget_get_allocation (GTK_WIDGET(socket), &allocation);
-  scale = gtk_widget_get_scale_factor (GTK_WIDGET(socket));
+  scale = gtk_widget_get_fractional_scale_factor (GTK_WIDGET(socket));
   xconfigure.x = x * scale;
   xconfigure.y = y * scale;
   xconfigure.width = allocation.width * scale;
